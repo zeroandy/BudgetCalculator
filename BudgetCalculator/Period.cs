@@ -14,20 +14,10 @@ namespace BudgetCalculator
             End = end;
         }
 
-        public DateTime Start { get; private set; }
         public DateTime End { get; private set; }
+        public DateTime Start { get; private set; }
 
-        public bool IsSameMonth()
-        {
-            return this.Start.Year == this.End.Year && this.Start.Month == this.End.Month;
-        }
-
-        public int TotalDays()
-        {
-            return (this.End - this.Start).Days + 1;
-        }
-
-        public int OveralppingDays(Period period)
+        public int OverlappingDays(Period period)
         {
             if (End < period.Start)
             {
@@ -47,18 +37,17 @@ namespace BudgetCalculator
 
         private DateTime EffectiveEndDate(Period period)
         {
-            var effectiveEndDate = End > period.End
-                ? period.End
-                : End;
-            return effectiveEndDate;
+            return End > period.End ? period.End : End;
         }
 
         private DateTime EffectiveStartDate(Period period)
         {
-            var effectiveStartDate = Start < period.Start
-                ? period.Start
-                : Start;
-            return effectiveStartDate;
+            return Start < period.Start ? period.Start : Start;
+        }
+
+        private int TotalDays()
+        {
+            return (this.End - this.Start).Days + 1;
         }
     }
 }

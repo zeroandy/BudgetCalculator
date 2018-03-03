@@ -34,7 +34,7 @@ namespace BudgetCalculator
 
         public int EffectiveAmountOfBudget(Period period)
         {
-            return DailyAmount() * period.OveralppingDays(new Period(FirstDay, LastDay));
+            return DailyAmount() * period.OverlappingDays(new Period(FirstDay, LastDay));
         }
 
         private int DailyAmount()
