@@ -4,38 +4,6 @@ using System.Linq;
 
 namespace BudgetCalculator
 {
-    internal class Period
-    {
-        public Period(DateTime start, DateTime end)
-        {
-            if (start > end)
-            {
-                throw new ArgumentException();
-            }
-            Start = start;
-            End = end;
-        }
-
-        public DateTime Start { get; private set; }
-        public DateTime End { get; private set; }
-
-        public bool IsSameMonth()
-        {
-            return this.Start.Year == this.End.Year && this.Start.Month == this.End.Month;
-        }
-
-        public int EffectiveDays()
-        {
-            return (this.End - this.Start).Days + 1;
-        }
-
-        public int MonthCount()
-        {
-            var monthCount = End.MonthDifference(Start);
-            return monthCount;
-        }
-    }
-
     internal class Accounting
     {
         private readonly IRepository<Budget> _repo;
@@ -49,14 +17,16 @@ namespace BudgetCalculator
         {
             var period = new Period(start, end);
 
+            var budgets = _repo.GetAll();
+
             return period.IsSameMonth()
-                ? GetOneMonthAmount(period)
-                : GetRangeMonthAmount(period);
+                ? GetOneMonthAmount(period, budgets)
+                : GetRangeMonthAmount(period, budgets);
         }
 
-        private int GetOneMonthAmount(Period period)
+        private int GetOneMonthAmount(Period period, List<Budget> budgets)
         {
-            var budget = _repo.GetAll().Get(period.Start);
+            var budget = budgets.Get(period.Start);
             if (budget == null)
             {
                 return 0;
@@ -65,14 +35,14 @@ namespace BudgetCalculator
             return budget.DailyAmount() * period.EffectiveDays();
         }
 
-        private decimal GetRangeMonthAmount(Period period)
+        private decimal GetRangeMonthAmount(Period period, List<Budget> budgets)
         {
             var monthCount = period.MonthCount();
             var total = 0;
             for (var index = 0; index <= monthCount; index++)
             {
                 var effectivePeriod = EffectivePeriod(period, index, monthCount);
-                total += GetOneMonthAmount(effectivePeriod);
+                total += GetOneMonthAmount(effectivePeriod, budgets);
             }
             return total;
         }
