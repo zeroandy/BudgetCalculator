@@ -28,6 +28,12 @@ namespace BudgetCalculator
         {
             return (this.End - this.Start).Days + 1;
         }
+
+        public int MonthCount()
+        {
+            var monthCount = End.MonthDifference(Start);
+            return monthCount;
+        }
     }
 
     internal class Accounting
@@ -45,7 +51,7 @@ namespace BudgetCalculator
 
             return period.IsSameMonth()
                 ? GetOneMonthAmount(period)
-                : GetRangeMonthAmount(start, end);
+                : GetRangeMonthAmount(period);
         }
 
         private int GetOneMonthAmount(Period period)
@@ -59,27 +65,35 @@ namespace BudgetCalculator
             return budget.DailyAmount() * period.EffectiveDays();
         }
 
-        private decimal GetRangeMonthAmount(DateTime start, DateTime end)
+        private decimal GetRangeMonthAmount(Period period)
         {
-            var monthCount = end.MonthDifference(start);
+            var monthCount = period.MonthCount();
             var total = 0;
             for (var index = 0; index <= monthCount; index++)
             {
-                if (index == 0)
-                {
-                    total += GetOneMonthAmount(new Period(start, start.LastDate()));
-                }
-                else if (index == monthCount)
-                {
-                    total += GetOneMonthAmount(new Period(end.FirstDate(), end));
-                }
-                else
-                {
-                    var now = start.AddMonths(index);
-                    total += GetOneMonthAmount(new Period(now.FirstDate(), now.LastDate()));
-                }
+                var effectivePeriod = EffectivePeriod(period, index, monthCount);
+                total += GetOneMonthAmount(effectivePeriod);
             }
             return total;
+        }
+
+        private static Period EffectivePeriod(Period period, int index, int monthCount)
+        {
+            Period effectivePeriod = null;
+            if (index == 0)
+            {
+                effectivePeriod = new Period(period.Start, period.Start.LastDate());
+            }
+            else if (index == monthCount)
+            {
+                effectivePeriod = new Period(period.End.FirstDate(), period.End);
+            }
+            else
+            {
+                var now = period.Start.AddMonths(index);
+                effectivePeriod = new Period(now.FirstDate(), now.LastDate());
+            }
+            return effectivePeriod;
         }
     }
 
