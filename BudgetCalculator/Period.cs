@@ -2,7 +2,7 @@
 
 namespace BudgetCalculator
 {
-    internal class Period
+    public class Period
     {
         public Period(DateTime start, DateTime end)
         {
@@ -25,12 +25,6 @@ namespace BudgetCalculator
         public int TotalDays()
         {
             return (this.End - this.Start).Days + 1;
-        }
-
-        public int MonthCount()
-        {
-            var monthCount = End.MonthDifference(Start);
-            return monthCount;
         }
 
         public int OveralppingDays(Period period)

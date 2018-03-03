@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace BudgetCalculator
@@ -16,73 +15,7 @@ namespace BudgetCalculator
         public decimal TotalAmount(DateTime start, DateTime end)
         {
             var period = new Period(start, end);
-
-            var budgets = _repo.GetAll();
-
-            return period.IsSameMonth()
-                ? GetOneMonthAmount(period, budgets)
-                : GetRangeMonthAmount(period, budgets);
-        }
-
-        private int GetOneMonthAmount(Period period, List<Budget> budgets)
-        {
-            var budget = budgets.Get(period.Start);
-            if (budget == null)
-            {
-                return 0;
-            }
-
-            return budget.DailyAmount() * period.TotalDays();
-        }
-
-        private decimal GetRangeMonthAmount(Period period, List<Budget> budgets)
-        {
-            var monthCount = period.MonthCount();
-            var total = 0;
-            for (var index = 0; index <= monthCount; index++)
-            {
-                var budget = GetCurrentBudgetByPeriodMonth(period, budgets, index);
-
-                if (budget == null)
-                {
-                    continue;
-                }
-                var effectiveDays = period.OveralppingDays(new Period(budget.FirstDay, budget.LastDay));
-                total += budget.DailyAmount() * effectiveDays;
-            }
-            return total;
-        }
-
-        private static Budget GetCurrentBudgetByPeriodMonth(Period period, List<Budget> budgets, int index)
-        {
-            var currentPeriodMonth = period.Start.AddMonths(index);
-            return budgets.FirstOrDefault(b => b.YearMonth == currentPeriodMonth.ToString("yyyyMM"));
-        }
-    }
-
-    public static class BudgetExtension
-    {
-        public static Budget Get(this List<Budget> list, DateTime date)
-        {
-            return list.FirstOrDefault(r => r.YearMonth == date.ToString("yyyyMM"));
-        }
-    }
-
-    public static class DateTimeExtension
-    {
-        public static int MonthDifference(this DateTime lValue, DateTime rValue)
-        {
-            return (lValue.Month - rValue.Month) + 12 * (lValue.Year - rValue.Year);
-        }
-
-        public static DateTime LastDate(this DateTime date)
-        {
-            return new DateTime(date.Year, date.Month, DateTime.DaysInMonth(date.Year, date.Month));
-        }
-
-        public static DateTime FirstDate(this DateTime date)
-        {
-            return new DateTime(date.Year, date.Month, 1);
+            return _repo.GetAll().Sum(b => b.EffectiveAmountOfBudget(period));
         }
     }
 }
