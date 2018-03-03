@@ -32,7 +32,7 @@ namespace BudgetCalculator
                 return 0;
             }
 
-            return budget.DailyAmount() * period.EffectiveDays();
+            return budget.DailyAmount() * period.TotalDays();
         }
 
         private decimal GetRangeMonthAmount(Period period, List<Budget> budgets)
@@ -47,8 +47,8 @@ namespace BudgetCalculator
                 {
                     continue;
                 }
-                var effectivePeriod = EffectivePeriod(period, index, monthCount, budget);
-                total += GetOneMonthAmount(effectivePeriod, budgets);
+                var effectiveDays = period.OveralppingDays(new Period(budget.FirstDay, budget.LastDay));
+                total += budget.DailyAmount() * effectiveDays;
             }
             return total;
         }
@@ -56,32 +56,7 @@ namespace BudgetCalculator
         private static Budget GetCurrentBudgetByPeriodMonth(Period period, List<Budget> budgets, int index)
         {
             var currentPeriodMonth = period.Start.AddMonths(index);
-            var budget = budgets.FirstOrDefault(b => b.YearMonth == currentPeriodMonth.ToString("yyyyMM"));
-            return budget;
-        }
-
-        private static Period EffectivePeriod(Period period, int index, int monthCount, Budget budget)
-        {
-            Period effectivePeriod = null;
-            DateTime effectiveStartDate;
-            DateTime effectiveEndDate;
-
-            if (index == 0)
-            {
-                effectiveStartDate = period.Start;
-                effectiveEndDate = budget.LastDay;
-            }
-            else if (index == monthCount)
-            {
-                effectiveStartDate = budget.FirstDay;
-                effectiveEndDate = period.End;
-            }
-            else
-            {
-                effectiveStartDate = budget.FirstDay;
-                effectiveEndDate = budget.LastDay;
-            }
-            return new Period(effectiveStartDate, effectiveEndDate);
+            return budgets.FirstOrDefault(b => b.YearMonth == currentPeriodMonth.ToString("yyyyMM"));
         }
     }
 

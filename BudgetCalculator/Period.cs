@@ -22,7 +22,7 @@ namespace BudgetCalculator
             return this.Start.Year == this.End.Year && this.Start.Month == this.End.Month;
         }
 
-        public int EffectiveDays()
+        public int TotalDays()
         {
             return (this.End - this.Start).Days + 1;
         }
@@ -31,6 +31,40 @@ namespace BudgetCalculator
         {
             var monthCount = End.MonthDifference(Start);
             return monthCount;
+        }
+
+        public int OveralppingDays(Period period)
+        {
+            if (End < period.Start)
+            {
+                return 0;
+            }
+
+            if (Start > period.End)
+            {
+                return 0;
+            }
+
+            var effectiveStartDate = EffectiveStartDate(period);
+            var effectiveEndDate = EffectiveEndDate(period);
+
+            return new Period(effectiveStartDate, effectiveEndDate).TotalDays();
+        }
+
+        private DateTime EffectiveEndDate(Period period)
+        {
+            var effectiveEndDate = End > period.End
+                ? period.End
+                : End;
+            return effectiveEndDate;
+        }
+
+        private DateTime EffectiveStartDate(Period period)
+        {
+            var effectiveStartDate = Start < period.Start
+                ? period.Start
+                : Start;
+            return effectiveStartDate;
         }
     }
 }
