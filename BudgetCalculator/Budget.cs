@@ -4,11 +4,26 @@ namespace BudgetCalculator
 {
     public class Budget
     {
+        public int Amount { get; set; }
         public string YearMonth { get; set; }
 
-        public int Amount { get; set; }
+        private DateTime FirstDay
+        {
+            get
+            {
+                return DateTime.ParseExact(YearMonth + "01", "yyyyMMdd", null);
+            }
+        }
 
-        public int TotalDays
+        private DateTime LastDay
+        {
+            get
+            {
+                return DateTime.ParseExact(YearMonth + TotalDays, "yyyyMMdd", null);
+            }
+        }
+
+        private int TotalDays
         {
             get
             {
@@ -17,33 +32,14 @@ namespace BudgetCalculator
             }
         }
 
-        public DateTime FirstDay
-        {
-            get
-            {
-                return DateTime.ParseExact(YearMonth + "01", "yyyyMMdd", null);
-            }
-        }
-
-        public DateTime LastDay
-        {
-            get
-            {
-                return DateTime.ParseExact(YearMonth + TotalDays, "yyyyMMdd", null);
-            }
-        }
-
-        public int DailyAmount()
-        {
-            var dailyAmount = (Amount / TotalDays);
-            return dailyAmount;
-        }
-
         public int EffectiveAmountOfBudget(Period period)
         {
-            var effectiveAmountOfBudget =
-                DailyAmount() * period.OveralppingDays(new Period(FirstDay, LastDay));
-            return effectiveAmountOfBudget;
+            return DailyAmount() * period.OveralppingDays(new Period(FirstDay, LastDay));
+        }
+
+        private int DailyAmount()
+        {
+            return Amount / TotalDays;
         }
     }
 }
